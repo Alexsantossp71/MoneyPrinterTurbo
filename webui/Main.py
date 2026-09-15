@@ -27,6 +27,27 @@ if root_dir in sys.path:
     sys.path.remove(root_dir)
 sys.path.insert(0, root_dir)
 
+# Streamlit Community Cloud roda o app em armazenamento efêmero: o config.toml
+# (onde a WebUI salva as chaves de API) é recriado a cada reinício do contêiner.
+# Para não perder as chaves, o conteúdo completo do config.toml pode ser definido
+# no Secret "MPT_CONFIG_TOML" (Settings → Secrets da plataforma). O arquivo é
+# restaurado aqui, antes de carregar app.config — somente quando ainda não existe,
+# para não sobrescrever alterações feitas durante a sessão atual.
+try:
+    _mpt_secret_config = st.secrets.get("MPT_CONFIG_TOML")
+    _mpt_config_path = os.path.join(root_dir, "config.toml")
+    if (
+        isinstance(_mpt_secret_config, str)
+        and _mpt_secret_config.strip()
+        and not os.path.isfile(_mpt_config_path)
+    ):
+        with open(_mpt_config_path, "w", encoding="utf-8") as _mpt_config_file:
+            _mpt_config_file.write(_mpt_secret_config)
+except Exception:
+    # Sem secrets configurados (execução local, CLI ou testes), segue o fluxo
+    # padrão: o app cria o config.toml a partir do config.example.toml.
+    pass
+
 from app.config import config
 from app.models import const
 from app.models.llm_provider import (

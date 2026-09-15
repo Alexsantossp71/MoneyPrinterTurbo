@@ -311,7 +311,7 @@ class TestLiteLLMProvider(unittest.TestCase):
             get_llm_provider("gemini").default_model, "gemini-3.1-pro-preview"
         )
         openrouter = get_llm_provider("openrouter")
-        self.assertEqual(openrouter.default_model, "minimax/minimax-m3:free")
+        self.assertEqual(openrouter.default_model, "google/gemma-4-31b-it:free")
         self.assertEqual(openrouter.default_base_url, "https://openrouter.ai/api/v1")
         self.assertEqual(openrouter.adapter, "openai_compatible")
         self.assertTrue(openrouter.requires_api_key)
@@ -415,7 +415,7 @@ class TestLiteLLMProvider(unittest.TestCase):
             openrouter.api_key_url,
             "https://openrouter.ai/settings/keys",
         )
-        self.assertEqual(openrouter.default_model, "minimax/minimax-m3:free")
+        self.assertEqual(openrouter.default_model, "google/gemma-4-31b-it:free")
         self.assertEqual(openrouter.default_base_url, "https://openrouter.ai/api/v1")
         api_route = get_llm_provider("api_route")
         self.assertEqual(
@@ -1341,7 +1341,7 @@ class TestLiteLLMProvider(unittest.TestCase):
         self.assertEqual(
             fake_completions.kwargs,
             {
-                "model": "minimax/minimax-m3:free",
+                "model": "google/gemma-4-31b-it:free",
                 "messages": [{"role": "user", "content": "Say hello"}],
             },
         )

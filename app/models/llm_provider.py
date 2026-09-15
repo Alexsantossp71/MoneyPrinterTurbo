@@ -387,7 +387,7 @@ LLM_PROVIDER_REGISTRY = (
         "openrouter",
         "OpenRouter",
         api_key_url="https://openrouter.ai/settings/keys",
-        default_model="minimax/minimax-m3:free",
+        default_model="google/gemma-4-31b-it:free",
         default_base_url="https://openrouter.ai/api/v1",
     ),
     LLMProviderSpec(

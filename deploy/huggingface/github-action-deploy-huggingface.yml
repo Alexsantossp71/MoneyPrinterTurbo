@@ -1,0 +1,46 @@
+name: Deploy to Hugging Face Space
+
+# Envia os arquivos de deploy/huggingface/ para um Hugging Face Space,
+# sempre que houver alteração neles no branch main (ou manualmente,
+# via "Run workflow"). O push no Space dispara o rebuild automaticamente —
+# o mesmo fluxo "push -> site no ar" do GitHub Pages, mas com Docker.
+on:
+  push:
+    branches: [main]
+    paths: ["deploy/huggingface/**"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Push deployment files to Hugging Face Space
+        env:
+          # Crie os secrets HF_TOKEN e HF_SPACE nas Settings do repositório:
+          #   HF_TOKEN  -> token do Hugging Face com permissão de escrita
+          #   HF_SPACE  -> "usuario/nome-do-space", ex.: "alex/moneyprinterturbo"
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE: ${{ secrets.HF_SPACE }}
+        run: |
+          set -e
+          if [ -z "$HF_TOKEN" ] || [ -z "$HF_SPACE" ]; then
+            echo "::error::Configure os secrets HF_TOKEN e HF_SPACE (instrucoes em deploy/huggingface/GUIA-DEPLOY-PT-BR.md)"
+            exit 1
+          fi
+          git clone "https://user:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE}" space
+          cd space
+          cp -f ../deploy/huggingface/README.md \
+                ../deploy/huggingface/Dockerfile \
+                ../deploy/huggingface/entrypoint.sh .
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md Dockerfile entrypoint.sh
+          if git commit -m "sync: MoneyPrinterTurbo from GitHub ${GITHUB_SHA}"; then
+            git push
+          else
+            echo "Nenhuma alteracao a enviar."
+          fi
